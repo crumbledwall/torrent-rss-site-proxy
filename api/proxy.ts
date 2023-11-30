@@ -45,7 +45,7 @@ async function fetchAndApply(request, response) {
 
         if(content_type.indexOf("application/xml") !== -1){
             original_text = await replace_response_text(original_response, upstream_domain, url_hostname);
-        } else if(content_type.indexOf("image") !== -1){
+        } else if(content_type.indexOf("image") !== -1 || content_type.indexOf("application/x-bittorrent") !== -1){
             redirect = true;
         } else {
             original_text = await original_response.text()
