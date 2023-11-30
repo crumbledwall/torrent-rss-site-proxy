@@ -1,0 +1,23 @@
+{
+  "name": "torrent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crumbledwall/torrent.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/crumbledwall/torrent/issues"
+  },
+  "homepage": "https://github.com/crumbledwall/torrent#readme",
+  "dependencies": {
+    "@types/node": "^20.10.1",
+    "@vercel/node": "^3.0.11"
+  }
+}
