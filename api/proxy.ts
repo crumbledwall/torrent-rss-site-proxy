@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { Buffer } from 'node:buffer'
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const upstream = 'nyaa.si'
@@ -26,38 +27,36 @@ async function fetchAndApply(request, response) {
     } else {
         url.pathname = upstream_path + url.pathname;
     }
-        let method = request.method;
-        let request_headers = request.headers;
+    let method = request.method;
+    let request_headers = request.headers;
 
-        request_headers['host']= url.hostname;
-        request_headers['referer'] = url.hostname;
+    request_headers['host'] = url.hostname;
+    request_headers['referer'] = url.hostname;
 
-        let original_response = await fetch(url.href, {
-            method: method,
-            headers: request_headers
-        })
+    let original_response = await fetch(url.href, {
+        method: method,
+        headers: request_headers
+    })
 
-        let original_text;
-        let status = original_response.status;
-        let content_type = original_response.headers.get("content-type");
-        response.setHeader("content-type", content_type);
-        let redirect;
+    let original_text;
+    let status = original_response.status;
+    let content_type = original_response.headers.get("content-type");
+    response.setHeader("content-type", content_type);
+    let buffer;
 
-        if(content_type.indexOf("application/xml") !== -1){
-            original_text = await replace_response_text(original_response, upstream_domain, url_hostname);
-        } else if(content_type.indexOf("image") !== -1 || content_type.indexOf("application/x-bittorrent") !== -1){
-            redirect = true;
-        } else {
-            original_text = await original_response.text()
-        }
+    if (content_type.indexOf("application/xml") !== -1) {
+        original_text = await replace_response_text(original_response, upstream_domain, url_hostname);
+    } else if (content_type.indexOf("image") !== -1 || content_type.indexOf("application/x-bittorrent") !== -1) {
+        buffer = Buffer.from(await original_response.arrayBuffer());
+    } else {
+        original_text = await original_response.text()
+    }
 
-    
+
     return {
-        body:original_text,
+        body: original_text,
         resp: response,
-        status: status,
-        redirect: redirect,
-        url: url
+        buffer: buffer,
     };
 }
 
@@ -87,12 +86,12 @@ async function replace_response_text(response, upstream_domain, host_name) {
 
 
 export default async function handler(
-  request: VercelRequest,
-  response: VercelResponse,
+    request: VercelRequest,
+    response: VercelResponse,
 ) {
-    let {resp, body, redirect, url} =  await fetchAndApply(request, response);
-    if(redirect){
-        return resp.redirect(url.href);
+    let { resp, body, buffer } = await fetchAndApply(request, response);
+    if (buffer) {
+        return resp.end(buffer);
     }
     return resp.send(body);
 }
